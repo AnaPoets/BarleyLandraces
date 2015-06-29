@@ -16,6 +16,8 @@ GeneticMap_iSelect_9k.txt ==> Genetic map for all SNPs in the 9k iSelect platfor
 
 Private_allele_ALLpops.txt ==> A list of the private SNPs at each wild population, and the allele that was private at each SNP. This table was not include in the paper
 
+The raw genotyping data for the 2,446 accessions in the NSGC can be found at http://dx.doi.org/10.6084/m9.figshare from entry1466919 to 1466929 (e.g. http://dx.doi.org/10.6084/m9.figshare.1466919).
+
 
 Wild Barley Diversity Collection (WBDC)
 ---------------------------------------
