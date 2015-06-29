@@ -1,0 +1,878 @@
+c_asia<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_C_Asia.txt",header=T,row.names=1)
+dim(c_asia)
+head(c_asia)
+c_asia<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_C_Asia.txt",header=T,row.names=1)#
+#
+n_levant<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_levant.txt",header=T,row.names=1)#
+#
+n_mesopotamia<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_mesopotamia.txt",header=T,row.names=1)#
+#
+s_desert<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_S_desert.txt",header=T,row.names=1)#
+#
+s_levant<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_S_levant.txt",header=T,row.names=1)
+dim(c_asia)
+dim(n_levant)
+dim(n_mesopotamia)
+dim(s_desert)
+dim(s_levant)
+head(s_levant)
+rm(list=ls())#
+support<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/gmap_and_suport_complete.xls",header=T)#
+#
+support[1:10,1:15]#
+#Remove SNP info#
+#
+support<-support[,-c(1:12 )]#
+#
+support[1:10,1:10] #
+t(support)->t_support#
+t_support[1:10,]#
+table(t_support[2,])#
+dim(t_support)#
+#
+#remove extra#
+t_support<-t_support[-1,]#
+#t_support<-t_support[1:10,]
+matrix(0,dim(t_support)[[1]],7)->my_results#
+#
+for (i in 1:dim(t_support)[1]){#
+	table(t_support[i,]) ->table_R#
+	as.data.frame(table_R)->my_table#
+	intersect(c(1,2,3,5,6,7),my_table[,1]) ->table_data#
+	as.data.frame(table_data)->items_value#
+	for (j in 1:dim(items_value)[1]) {#
+	items_value[j,1] ->position#
+	as.numeric(as.character(position))->position2#
+	     my_table[j,2] ->my_results[i,position2]}#
+	}#
+	my_results[1:10,]#
+	dim(my_results)#
+	colnames(my_results)<-c("1","2","3","4","5","6","7")#
+	important_col<-my_results[,c(1,2,3,5,6)]#
+	important_col[1:10,]
+dim(important_col)
+dim(t_support)
+row.names(important_col)<-row.names(t_support)#
+#
+important_col[1:10,]#
+colnames(important_col)<-c("Northern_Mesopotamia","Southern_Levant","Syrian_Desert","Northern_levant","Central_Asia")#
+important_col<-as.data.frame(important_col)#
+#Calculate average proportion at each sample (23=regions with no missing data)#
+#
+proportion_ancestry_samples <-important_col/sum(important_col[1,])#
+proportion_ancestry_samples[1:10,]
+UNIQUE<-seq(1,nrow(proportion_ancestry_samples),2)#
+proportion_ancestry<-proportion_ancestry_samples[UNIQUE,]#
+dim(proportion_ancestry)
+latlong<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/For_STRUCTURE/MARIA_latlong_modified.txt",header=T)#
+head(latlong)#
+latlong<-latlong[,-c(2,3,4,5,6,7,8)]#
+#
+dim(latlong)#
+#
+#Select only landraces#
+latlong_land<-latlong[(latlong[,1]%in% row.names(proportion_ancestry)),]#
+#sort by sample name#
+#
+latlong_l_or<-latlong_land[order(latlong_land[,1]),]#
+#
+#Attach latlong to proportion ancestry#
+#
+prop_latlong<-cbind(as.data.frame(latlong_l_or),as.data.frame(proportion_ancestry))
+library(pracma)#
+# Calculates the geodesic distance between two points specified by radian latitude/longitude using the#
+# Haversine formula (hf)#
+gcd.hf <- function(long1, lat1, long2, lat2) {#
+  R <- 6371 # Earth mean radius [km]#
+  delta.long <- (long2 - long1)#
+  delta.lat <- (lat2 - lat1)#
+  a <- sin(delta.lat/2)^2 + cos(lat1) * cos(lat2) * sin(delta.long/2)^2#
+  c <- 2 * asin(min(1,sqrt(a)))#
+  d = R * c#
+  return(d) # Distance in km#
+}#
+#
+gcd <- function(long1, lat1, long2, lat2) {#
+  # Convert degrees to radians#
+  long1 <- deg2rad(long1)#
+  lat1 <- deg2rad(lat1)#
+  long2 <- deg2rad(long2)#
+  lat2 <- deg2rad(lat2)#
+  return(haversine = gcd.hf(long1, lat1, long2, lat2)                 #
+)#
+}
+wild<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/For_STRUCTURE/Zhou_WBDC/Structure_haplotypes/WBDC_assig_k6_hap.txt",header=T)#
+wild[1:10,]#
+#
+#Separate wild Populations#
+w_n_mesopotamia<-subset(wild,wild$pop6_hap == '1')#
+w_s_levant<-subset(wild,wild$pop6_hap == '2')#
+w_s_desert<-subset(wild,wild$pop6_hap == '3')#
+w_n_levant<-subset(wild,wild$pop6_hap == '5')#
+w_asia<-subset(wild,wild$pop6_hap == '6')
+population<-w_asia#
+#
+Distance<-NULL#
+land_distance<-NULL#
+#
+#Compare one landrace to each wild to determine shortest distance#
+for (i in 1:(dim(prop_latlong)[1])) {#
+	for (w in 1:(dim(population)[1])) {#
+	#long2<-population[w,4]#
+	#lat2<-population[w,3]#
+	Distance[w]<-gcd(prop_latlong[i,3],prop_latlong[i,2],population[w,4],population[w,3])#
+	land_distance[i]<-min(Distance)#
+	}#
+	}#
+#} else print("Error! there are samples with NaN == no assignment")#
+prop_latlong$Distance<-land_distance#
+length(land_distance)#
+head(prop_latlong)
+dim(prop_latlong)
+write.table(prop_latlong,"~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_C_asia.txt",quote=F,row.names=F,col.names=T,sep="\t")
+population<-w_n_levant#
+#
+Distance<-NULL#
+land_distance<-NULL#
+#
+#Compare one landrace to each wild to determine shortest distance#
+for (i in 1:(dim(prop_latlong)[1])) {#
+	for (w in 1:(dim(population)[1])) {#
+	#long2<-population[w,4]#
+	#lat2<-population[w,3]#
+	Distance[w]<-gcd(prop_latlong[i,3],prop_latlong[i,2],population[w,4],population[w,3])#
+	land_distance[i]<-min(Distance)#
+	}#
+	}#
+#} else print("Error! there are samples with NaN == no assignment")#
+prop_latlong$Distance<-land_distance#
+length(land_distance)#
+head(prop_latlong)#
+dim(prop_latlong)#
+write.table(prop_latlong,"~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_levant.txt",quote=F,row.names=F,col.names=T,sep="\t")
+population<-w_s_desert#
+#
+Distance<-NULL#
+land_distance<-NULL#
+#
+#Compare one landrace to each wild to determine shortest distance#
+for (i in 1:(dim(prop_latlong)[1])) {#
+	for (w in 1:(dim(population)[1])) {#
+	#long2<-population[w,4]#
+	#lat2<-population[w,3]#
+	Distance[w]<-gcd(prop_latlong[i,3],prop_latlong[i,2],population[w,4],population[w,3])#
+	land_distance[i]<-min(Distance)#
+	}#
+	}#
+#} else print("Error! there are samples with NaN == no assignment")#
+prop_latlong$Distance<-land_distance#
+length(land_distance)#
+head(prop_latlong)#
+dim(prop_latlong)#
+write.table(prop_latlong,"~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_S_desert.txt",quote=F,row.names=F,col.names=T,sep="\t")
+population<-w_s_levant#
+#
+Distance<-NULL#
+land_distance<-NULL#
+#
+#Compare one landrace to each wild to determine shortest distance#
+for (i in 1:(dim(prop_latlong)[1])) {#
+	for (w in 1:(dim(population)[1])) {#
+	#long2<-population[w,4]#
+	#lat2<-population[w,3]#
+	Distance[w]<-gcd(prop_latlong[i,3],prop_latlong[i,2],population[w,4],population[w,3])#
+	land_distance[i]<-min(Distance)#
+	}#
+	}#
+#} else print("Error! there are samples with NaN == no assignment")#
+prop_latlong$Distance<-land_distance#
+length(land_distance)#
+head(prop_latlong)#
+dim(prop_latlong)#
+write.table(prop_latlong,"~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_S_levant.txt",quote=F,row.names=F,col.names=T,sep="\t")
+population<-w_n_mesopotamia#
+#
+Distance<-NULL#
+land_distance<-NULL#
+#
+#Compare one landrace to each wild to determine shortest distance#
+for (i in 1:(dim(prop_latlong)[1])) {#
+	for (w in 1:(dim(population)[1])) {#
+	#long2<-population[w,4]#
+	#lat2<-population[w,3]#
+	Distance[w]<-gcd(prop_latlong[i,3],prop_latlong[i,2],population[w,4],population[w,3])#
+	land_distance[i]<-min(Distance)#
+	}#
+	}#
+#} else print("Error! there are samples with NaN == no assignment")#
+prop_latlong$Distance<-land_distance#
+length(land_distance)#
+head(prop_latlong)#
+dim(prop_latlong)#
+write.table(prop_latlong,"~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_mesopotamia.txt",quote=F,row.names=F,col.names=T,sep="\t")
+rm(list=ls())#
+#call the population assignement according to Structure k=4.#
+####CHANGE POPULATION#
+prop_latlong<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_mesopotamia.txt",header=T)#
+#
+assi<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/For_STRUCTURE/Structure_w_out_learning_samples_landraces/land_assignment_k4_iSelect6135.txt",header=T)#
+#
+# Select samples names for each population#
+#
+pop1<-subset(assi,assi$Populations == "1")#
+pop2<-subset(assi,assi$Populations == "2")#
+pop3<-subset(assi,assi$Populations == "3")#
+pop4<-subset(assi,assi$Populations == "4")#
+# Get only individuals growing in the native range of wild barley#
+prop_latlong <-subset(prop_latlong, prop_latlong$LATITUDE_original >= 29.72 & prop_latlong$LATITUDE_original <=46.77 & prop_latlong$LONGITUDE_original >=20.9 & prop_latlong $LONGITUDE_original <=73.66)#
+#
+# Separate resutls from supportMix for each population#
+#
+prop_latlong[(prop_latlong[,1] %in% pop1$Samples),]->supmix1#
+prop_latlong[(prop_latlong[,1] %in% pop2$Samples),]->supmix2#
+prop_latlong[(prop_latlong[,1] %in% pop3$Samples),]->supmix3#
+prop_latlong[(prop_latlong[,1] %in% pop4$Samples),]->supmix4#
+#
+head(prop_latlong)#
+##PLOT just the summary of the proportion ancestry distribution from each wild population#
+ave_dis1<-median(supmix1$Distance)#
+ave_dis2<-median(supmix2$Distance)#
+ave_dis3<-median(supmix3$Distance)#
+ave_dis4<-median(supmix4$Distance)#
+ave_distance<-rbind(ave_dis1,ave_dis2,ave_dis3,ave_dis4)#
+#
+## CHANGE THE POPULATION!!! to plot the proportion of assignment change as distance increases (supmix1[,4...8)]), Casia=8,N_levant=7,S_desert=6,S_levant=5,N_meso=4#
+#
+pdf("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Plot/Ancestry_vs_distance/N_mesopotamia_ave_wRange.pdf",width=7,height=5)#
+#
+boxplot(supmix1[,4],xlim=c(0,(max(ave_distance)+50)),ylim=c(0,0.5),at=c(ave_dis1),boxwex = 150,col="blue", main= "Northern Mesopotamia wild ancestry", ylab="Proportion Ancestry",xlab="Great circle distance (Km)")#
+boxplot(supmix2[,4],add=T,at=ave_dis2,boxwex=150,col="red")#
+boxplot(supmix3[,4],add=T,at=ave_dis3,boxwex=150,col="green")#
+#
+axis(1, labels =T)#
+#legend("topright",col=c("green","blue","red","cyan"),fill=c("Green","Blue","Red","Cyan"),legend=c("Coastal Mediterranean","Mediterranean","Asia","East Africa"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#legend("topright",col=c("blue","green","red"),fill=c("blue","green","Red"),legend=c("Central European","Coastal Mediterranean","Asia"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#
+dev.off() #
+#
+##Plot with correlation frequency vs distance. CHANGE COLUMN OF POPULATION ANALYZED!!#
+cor(prop_latlong$Distance,prop_latlong[,4])
+rm(list=ls())#
+#call the population assignement according to Structure k=4.#
+####CHANGE POPULATION#
+prop_latlong<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_S_levant.txt",header=T)#
+#
+assi<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/For_STRUCTURE/Structure_w_out_learning_samples_landraces/land_assignment_k4_iSelect6135.txt",header=T)#
+#
+# Select samples names for each population#
+#
+pop1<-subset(assi,assi$Populations == "1")#
+pop2<-subset(assi,assi$Populations == "2")#
+pop3<-subset(assi,assi$Populations == "3")#
+pop4<-subset(assi,assi$Populations == "4")#
+# Get only individuals growing in the native range of wild barley#
+prop_latlong <-subset(prop_latlong, prop_latlong$LATITUDE_original >= 29.72 & prop_latlong$LATITUDE_original <=46.77 & prop_latlong$LONGITUDE_original >=20.9 & prop_latlong $LONGITUDE_original <=73.66)#
+#
+# Separate resutls from supportMix for each population#
+#
+prop_latlong[(prop_latlong[,1] %in% pop1$Samples),]->supmix1#
+prop_latlong[(prop_latlong[,1] %in% pop2$Samples),]->supmix2#
+prop_latlong[(prop_latlong[,1] %in% pop3$Samples),]->supmix3#
+prop_latlong[(prop_latlong[,1] %in% pop4$Samples),]->supmix4#
+#
+head(prop_latlong)#
+##PLOT just the summary of the proportion ancestry distribution from each wild population#
+ave_dis1<-median(supmix1$Distance)#
+ave_dis2<-median(supmix2$Distance)#
+ave_dis3<-median(supmix3$Distance)#
+ave_dis4<-median(supmix4$Distance)#
+ave_distance<-rbind(ave_dis1,ave_dis2,ave_dis3,ave_dis4)#
+#
+## CHANGE THE POPULATION!!! to plot the proportion of assignment change as distance increases (supmix1[,4...8)]), Casia=8,N_levant=7,S_desert=6,S_levant=5,N_meso=4#
+#
+pdf("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Plot/Ancestry_vs_distance/S_levant_ave_wRange.pdf",width=7,height=5)#
+#
+boxplot(supmix1[,5],xlim=c(0,(max(ave_distance)+50)),ylim=c(0,0.5),at=c(ave_dis1),boxwex = 150,col="blue", main= "Southern Levant wild ancestry", ylab="Proportion Ancestry",xlab="Great circle distance (Km)")#
+boxplot(supmix2[,5],add=T,at=ave_dis2,boxwex=150,col="red")#
+boxplot(supmix3[,5],add=T,at=ave_dis3,boxwex=150,col="green")#
+#
+axis(1, labels =T)#
+#legend("topright",col=c("green","blue","red","cyan"),fill=c("Green","Blue","Red","Cyan"),legend=c("Coastal Mediterranean","Mediterranean","Asia","East Africa"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#legend("topright",col=c("blue","green","red"),fill=c("blue","green","Red"),legend=c("Central European","Coastal Mediterranean","Asia"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#
+dev.off() #
+#
+##Plot with correlation frequency vs distance. CHANGE COLUMN OF POPULATION ANALYZED!!#
+cor(prop_latlong$Distance,prop_latlong[,5])
+rm(list=ls())#
+#call the population assignement according to Structure k=4.#
+####CHANGE POPULATION#
+prop_latlong<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_S_desert.txt",header=T)#
+#
+assi<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/For_STRUCTURE/Structure_w_out_learning_samples_landraces/land_assignment_k4_iSelect6135.txt",header=T)#
+#
+# Select samples names for each population#
+#
+pop1<-subset(assi,assi$Populations == "1")#
+pop2<-subset(assi,assi$Populations == "2")#
+pop3<-subset(assi,assi$Populations == "3")#
+pop4<-subset(assi,assi$Populations == "4")#
+# Get only individuals growing in the native range of wild barley#
+prop_latlong <-subset(prop_latlong, prop_latlong$LATITUDE_original >= 29.72 & prop_latlong$LATITUDE_original <=46.77 & prop_latlong$LONGITUDE_original >=20.9 & prop_latlong $LONGITUDE_original <=73.66)#
+#
+# Separate resutls from supportMix for each population#
+#
+prop_latlong[(prop_latlong[,1] %in% pop1$Samples),]->supmix1#
+prop_latlong[(prop_latlong[,1] %in% pop2$Samples),]->supmix2#
+prop_latlong[(prop_latlong[,1] %in% pop3$Samples),]->supmix3#
+prop_latlong[(prop_latlong[,1] %in% pop4$Samples),]->supmix4#
+#
+head(prop_latlong)#
+##PLOT just the summary of the proportion ancestry distribution from each wild population#
+ave_dis1<-median(supmix1$Distance)#
+ave_dis2<-median(supmix2$Distance)#
+ave_dis3<-median(supmix3$Distance)#
+ave_dis4<-median(supmix4$Distance)#
+ave_distance<-rbind(ave_dis1,ave_dis2,ave_dis3,ave_dis4)#
+#
+## CHANGE THE POPULATION!!! to plot the proportion of assignment change as distance increases (supmix1[,4...8)]), Casia=8,N_levant=7,S_desert=6,S_levant=5,N_meso=4#
+#
+pdf("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Plot/Ancestry_vs_distance/S_desert_ave_wRange.pdf",width=7,height=5)#
+#
+boxplot(supmix1[,6],xlim=c(0,(max(ave_distance)+50)),ylim=c(0,0.5),at=c(ave_dis1),boxwex = 150,col="blue", main= "Syrian Desert wild ancestry", ylab="Proportion Ancestry",xlab="Great circle distance (Km)")#
+boxplot(supmix2[,6],add=T,at=ave_dis2,boxwex=150,col="red")#
+boxplot(supmix3[,6],add=T,at=ave_dis3,boxwex=150,col="green")#
+#
+axis(1, labels =T)#
+#legend("topright",col=c("green","blue","red","cyan"),fill=c("Green","Blue","Red","Cyan"),legend=c("Coastal Mediterranean","Mediterranean","Asia","East Africa"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#legend("topright",col=c("blue","green","red"),fill=c("blue","green","Red"),legend=c("Central European","Coastal Mediterranean","Asia"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#
+dev.off() #
+#
+##Plot with correlation frequency vs distance. CHANGE COLUMN OF POPULATION ANALYZED!!#
+cor(prop_latlong$Distance,prop_latlong[,6])
+rm(list=ls())#
+#call the population assignement according to Structure k=4.#
+####CHANGE POPULATION#
+prop_latlong<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_levant.txt",header=T)#
+#
+assi<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/For_STRUCTURE/Structure_w_out_learning_samples_landraces/land_assignment_k4_iSelect6135.txt",header=T)#
+#
+# Select samples names for each population#
+#
+pop1<-subset(assi,assi$Populations == "1")#
+pop2<-subset(assi,assi$Populations == "2")#
+pop3<-subset(assi,assi$Populations == "3")#
+pop4<-subset(assi,assi$Populations == "4")#
+# Get only individuals growing in the native range of wild barley#
+prop_latlong <-subset(prop_latlong, prop_latlong$LATITUDE_original >= 29.72 & prop_latlong$LATITUDE_original <=46.77 & prop_latlong$LONGITUDE_original >=20.9 & prop_latlong $LONGITUDE_original <=73.66)#
+#
+# Separate resutls from supportMix for each population#
+#
+prop_latlong[(prop_latlong[,1] %in% pop1$Samples),]->supmix1#
+prop_latlong[(prop_latlong[,1] %in% pop2$Samples),]->supmix2#
+prop_latlong[(prop_latlong[,1] %in% pop3$Samples),]->supmix3#
+prop_latlong[(prop_latlong[,1] %in% pop4$Samples),]->supmix4#
+#
+head(prop_latlong)#
+##PLOT just the summary of the proportion ancestry distribution from each wild population#
+ave_dis1<-median(supmix1$Distance)#
+ave_dis2<-median(supmix2$Distance)#
+ave_dis3<-median(supmix3$Distance)#
+ave_dis4<-median(supmix4$Distance)#
+ave_distance<-rbind(ave_dis1,ave_dis2,ave_dis3,ave_dis4)#
+#
+## CHANGE THE POPULATION!!! to plot the proportion of assignment change as distance increases (supmix1[,4...8)]), Casia=8,N_levant=7,S_desert=6,S_levant=5,N_meso=4#
+#
+pdf("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Plot/Ancestry_vs_distance/N_levant_ave_wRange.pdf",width=7,height=5)#
+#
+boxplot(supmix1[,7],xlim=c(0,(max(ave_distance)+50)),ylim=c(0,0.5),at=c(ave_dis1),boxwex = 150,col="blue", main= "Northern Levant wild ancestry", ylab="Proportion Ancestry",xlab="Great circle distance (Km)")#
+boxplot(supmix2[,7],add=T,at=ave_dis2,boxwex=150,col="red")#
+boxplot(supmix3[,7],add=T,at=ave_dis3,boxwex=150,col="green")#
+#
+axis(1, labels =T)#
+#legend("topright",col=c("green","blue","red","cyan"),fill=c("Green","Blue","Red","Cyan"),legend=c("Coastal Mediterranean","Mediterranean","Asia","East Africa"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#legend("topright",col=c("blue","green","red"),fill=c("blue","green","Red"),legend=c("Central European","Coastal Mediterranean","Asia"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#
+dev.off()
+###PLOT#
+rm(list=ls())#
+#call the population assignement according to Structure k=4.#
+####CHANGE POPULATION#
+prop_latlong<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_C_asia.txt",header=T)#
+#
+assi<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/For_STRUCTURE/Structure_w_out_learning_samples_landraces/land_assignment_k4_iSelect6135.txt",header=T)#
+#
+# Select samples names for each population#
+#
+pop1<-subset(assi,assi$Populations == "1")#
+pop2<-subset(assi,assi$Populations == "2")#
+pop3<-subset(assi,assi$Populations == "3")#
+pop4<-subset(assi,assi$Populations == "4")#
+# Get only individuals growing in the native range of wild barley#
+prop_latlong <-subset(prop_latlong, prop_latlong$LATITUDE_original >= 29.72 & prop_latlong$LATITUDE_original <=46.77 & prop_latlong$LONGITUDE_original >=20.9 & prop_latlong $LONGITUDE_original <=73.66)#
+#
+# Separate resutls from supportMix for each population#
+#
+prop_latlong[(prop_latlong[,1] %in% pop1$Samples),]->supmix1#
+prop_latlong[(prop_latlong[,1] %in% pop2$Samples),]->supmix2#
+prop_latlong[(prop_latlong[,1] %in% pop3$Samples),]->supmix3#
+prop_latlong[(prop_latlong[,1] %in% pop4$Samples),]->supmix4#
+#
+head(prop_latlong)#
+##PLOT just the summary of the proportion ancestry distribution from each wild population#
+ave_dis1<-median(supmix1$Distance)#
+ave_dis2<-median(supmix2$Distance)#
+ave_dis3<-median(supmix3$Distance)#
+ave_dis4<-median(supmix4$Distance)#
+ave_distance<-rbind(ave_dis1,ave_dis2,ave_dis3,ave_dis4)#
+#
+## CHANGE THE POPULATION!!! to plot the proportion of assignment change as distance increases (supmix1[,4...8)]), Casia=8,N_levant=7,S_desert=6,S_levant=5,N_meso=4#
+#
+pdf("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Plot/Ancestry_vs_distance/C_asia_ave_wRange.pdf",width=7,height=5)#
+#
+boxplot(supmix1[,8],xlim=c(0,(max(ave_distance)+50)),ylim=c(0,0.5),at=c(ave_dis1),boxwex = 150,col="blue", main= "Central Asia wild ancestry", ylab="Proportion Ancestry",xlab="Great circle distance (Km)")#
+boxplot(supmix2[,8],add=T,at=ave_dis2,boxwex=150,col="red")#
+boxplot(supmix3[,8],add=T,at=ave_dis3,boxwex=150,col="green")#
+#
+axis(1, labels =T)#
+#legend("topright",col=c("green","blue","red","cyan"),fill=c("Green","Blue","Red","Cyan"),legend=c("Coastal Mediterranean","Mediterranean","Asia","East Africa"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#legend("topright",col=c("blue","green","red"),fill=c("blue","green","Red"),legend=c("Central European","Coastal Mediterranean","Asia"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#
+dev.off() #
+#
+##Plot with correlation frequency vs distance. CHANGE COLUMN OF POPULATION ANALYZED!!#
+cor(prop_latlong$Distance,prop_latlong[,8])
+rm(list=ls())#
+#call the population assignement according to Structure k=4.#
+####CHANGE POPULATION#
+prop_latlong<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_levant.txt",header=T)#
+#
+assi<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/For_STRUCTURE/Structure_w_out_learning_samples_landraces/land_assignment_k4_iSelect6135.txt",header=T)#
+#
+# Select samples names for each population#
+#
+pop1<-subset(assi,assi$Populations == "1")#
+pop2<-subset(assi,assi$Populations == "2")#
+pop3<-subset(assi,assi$Populations == "3")#
+pop4<-subset(assi,assi$Populations == "4")#
+# Get only individuals growing in the native range of wild barley#
+prop_latlong <-subset(prop_latlong, prop_latlong$LATITUDE_original >= 29.72 & prop_latlong$LATITUDE_original <=46.77 & prop_latlong$LONGITUDE_original >=20.9 & prop_latlong $LONGITUDE_original <=73.66)#
+#
+# Separate resutls from supportMix for each population#
+#
+prop_latlong[(prop_latlong[,1] %in% pop1$Samples),]->supmix1#
+prop_latlong[(prop_latlong[,1] %in% pop2$Samples),]->supmix2#
+prop_latlong[(prop_latlong[,1] %in% pop3$Samples),]->supmix3#
+prop_latlong[(prop_latlong[,1] %in% pop4$Samples),]->supmix4#
+#
+head(prop_latlong)#
+##PLOT just the summary of the proportion ancestry distribution from each wild population#
+ave_dis1<-median(supmix1$Distance)#
+ave_dis2<-median(supmix2$Distance)#
+ave_dis3<-median(supmix3$Distance)#
+ave_dis4<-median(supmix4$Distance)#
+ave_distance<-rbind(ave_dis1,ave_dis2,ave_dis3,ave_dis4)
+cor(prop_latlong$Distance,prop_latlong[,7])
+rm(list=ls())#
+#
+c_asia<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_C_Asia.txt",header=T,row.names=1)#
+#
+n_levant<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_levant.txt",header=T,row.names=1)#
+#
+n_mesopotamia<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_mesopotamia.txt",header=T,row.names=1)#
+#
+s_desert<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_S_desert.txt",header=T,row.names=1)#
+#
+s_levant<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_S_levant.txt",header=T,row.names=1)
+dim(c_asia)
+Proportions_dis<-cbind(as.data.frame(n_levant[,6]),as.data.frame(n_mesopotamia[,3]),as.data.frame(s_desert[,5]),as.data.frame(s_levant[,4]),as.data.frame(c_asia[,7]),as.data.frame(n_levant[,8]),as.data.frame(n_mesopotamia[,8]),as.data.frame(s_desert[,8]),as.data.frame(s_levant[,8]),as.data.frame(c_asia[,8]))#
+#
+row.names(Proportions_dis)<-row.names(c_asia)#
+colnames(Proportions_dis)<-c("Northern Levant","Northern Mesopotamia","Syrian Desert","Southern Levant","Central Asia","Northern Levant","Northern Mesopotamia","Syrian Desert","Southern Levant","Central Asia")
+head(Proportions_dis)#
+#
+#Round to two decimals#
+#
+Proportions_round<-round(Proportions_dis,digits=2)#
+head(Proportions_round)#
+#
+#Separate by landrace populations#
+str<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/For_STRUCTURE/Structure_land_iSelect/land_assignment_k4_iSelect6135.txt",header=T)#
+head(str)#
+#
+land1<-subset(str,str$Populations ==1)#
+land2<-subset(str,str$Populations ==2)#
+land3<-subset(str,str$Populations ==3)#
+land4<-subset(str,str$Populations ==4)#
+#
+Prop_land1<-Proportions_round[(row.names(Proportions_round) %in% land1$Samples),]#
+Prop_land2<-Proportions_round[(row.names(Proportions_round) %in% land2$Samples),]#
+Prop_land3<-Proportions_round[(row.names(Proportions_round) %in% land3$Samples),]#
+Prop_land4<-Proportions_round[(row.names(Proportions_round) %in% land4$Samples),]#
+#
+EMPTY_ROW<-as.data.frame(t(rep("",(dim(Proportions_round)[2]))))#
+colnames(EMPTY_ROW)<-c("Northern Levant","Northern Mesopotamia","Syrian Desert","Southern Levant","Central Asia","Northern Levant","Northern Mesopotamia","Syrian Desert","Southern Levant","Central Asia")#
+Ind_prop_distance<-rbind(as.data.frame(Prop_land1),as.data.frame(EMPTY_ROW),as.data.frame(Prop_land2),as.data.frame(EMPTY_ROW),as.data.frame(Prop_land3),as.data.frame(EMPTY_ROW),as.data.frame(Prop_land4))#
+#
+write.table(Ind_prop_distance,"~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/TableS5_prop_distance.xls",quote=F,row.names=T,col.names=T,sep="\t")
+rm(list=ls())#
+#call the population assignement according to Structure k=4.#
+####CHANGE POPULATION#
+prop_latlong<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_S_levant.txt",header=T)#
+#
+assi<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/For_STRUCTURE/Structure_w_out_learning_samples_landraces/land_assignment_k4_iSelect6135.txt",header=T)#
+#
+# Select samples names for each population#
+#
+pop1<-subset(assi,assi$Populations == "1")#
+pop2<-subset(assi,assi$Populations == "2")#
+pop3<-subset(assi,assi$Populations == "3")#
+pop4<-subset(assi,assi$Populations == "4")#
+# Get only individuals growing in the native range of wild barley#
+prop_latlong <-subset(prop_latlong, prop_latlong$LATITUDE_original >= 29.72 & prop_latlong$LATITUDE_original <=46.77 & prop_latlong$LONGITUDE_original >=20.9 & prop_latlong $LONGITUDE_original <=73.66)#
+#
+# Separate resutls from supportMix for each population#
+#
+prop_latlong[(prop_latlong[,1] %in% pop1$Samples),]->supmix1#
+prop_latlong[(prop_latlong[,1] %in% pop2$Samples),]->supmix2#
+prop_latlong[(prop_latlong[,1] %in% pop3$Samples),]->supmix3#
+prop_latlong[(prop_latlong[,1] %in% pop4$Samples),]->supmix4
+ave_dis1<-median(supmix1$Distance)#
+ave_dis2<-median(supmix2$Distance)#
+ave_dis3<-median(supmix3$Distance)#
+ave_dis4<-median(supmix4$Distance)#
+ave_distance<-rbind(ave_dis1,ave_dis2,ave_dis3,ave_dis4)#
+#
+## CHANGE THE POPULATION!!! to plot the proportion of assignment change as distance increases (supmix1[,4...8)]), Casia=8,N_levant=7,S_desert=6,S_levant=5,N_meso=4
+pdf("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Plot/Ancestry_vs_distance/S_levant_ave_wRange.pdf",width=7,height=5)#
+#
+boxplot(supmix1[,7],xlim=c(0,(max(ave_distance)+50)),ylim=c(0,1),at=c(ave_dis1),boxwex = 150,col="blue", main= "Southern Levant wild ancestry", ylab="Proportion Ancestry",xlab="Great circle distance (Km)")#
+boxplot(supmix2[,7],add=T,at=ave_dis2,boxwex=150,col="red")#
+boxplot(supmix3[,7],add=T,at=ave_dis3,boxwex=150,col="green")#
+#
+axis(1, labels =T)#
+#legend("topright",col=c("green","blue","red","cyan"),fill=c("Green","Blue","Red","Cyan"),legend=c("Coastal Mediterranean","Mediterranean","Asia","East Africa"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#legend("topright",col=c("blue","green","red"),fill=c("blue","green","Red"),legend=c("Central European","Coastal Mediterranean","Asia"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#
+dev.off()
+pdf("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Plot/Ancestry_vs_distance/S_levant_ave_wRange.pdf",width=7,height=5)#
+#
+boxplot(supmix1[,7],xlim=c(0,(max(ave_distance)+50)),ylim=c(0,0.5),at=c(ave_dis1),boxwex = 150,col="blue", main= "Southern Levant wild ancestry", ylab="Proportion Ancestry",xlab="Great circle distance (Km)")#
+boxplot(supmix2[,7],add=T,at=ave_dis2,boxwex=150,col="red")#
+boxplot(supmix3[,7],add=T,at=ave_dis3,boxwex=150,col="green")#
+#
+axis(1, labels =T)#
+#legend("topright",col=c("green","blue","red","cyan"),fill=c("Green","Blue","Red","Cyan"),legend=c("Coastal Mediterranean","Mediterranean","Asia","East Africa"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#legend("topright",col=c("blue","green","red"),fill=c("blue","green","Red"),legend=c("Central European","Coastal Mediterranean","Asia"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#
+dev.off()
+cor(prop_latlong$Distance,prop_latlong[,7])
+cor(prop_latlong$Distance,prop_latlong[,5])
+###PLOT#
+rm(list=ls())#
+#call the population assignement according to Structure k=4.#
+####CHANGE POPULATION#
+prop_latlong<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_S_levant.txt",header=T)#
+#
+assi<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/For_STRUCTURE/Structure_w_out_learning_samples_landraces/land_assignment_k4_iSelect6135.txt",header=T)#
+#
+# Select samples names for each population#
+#
+pop1<-subset(assi,assi$Populations == "1")#
+pop2<-subset(assi,assi$Populations == "2")#
+pop3<-subset(assi,assi$Populations == "3")#
+pop4<-subset(assi,assi$Populations == "4")#
+# Get only individuals growing in the native range of wild barley#
+prop_latlong <-subset(prop_latlong, prop_latlong$LATITUDE_original >= 29.72 & prop_latlong$LATITUDE_original <=46.77 & prop_latlong$LONGITUDE_original >=20.9 & prop_latlong $LONGITUDE_original <=73.66)#
+#
+# Separate resutls from supportMix for each population#
+#
+prop_latlong[(prop_latlong[,1] %in% pop1$Samples),]->supmix1#
+prop_latlong[(prop_latlong[,1] %in% pop2$Samples),]->supmix2#
+prop_latlong[(prop_latlong[,1] %in% pop3$Samples),]->supmix3#
+prop_latlong[(prop_latlong[,1] %in% pop4$Samples),]->supmix4#
+#
+head(prop_latlong)#
+##PLOT just the summary of the proportion ancestry distribution from each wild population#
+ave_dis1<-median(supmix1$Distance)#
+ave_dis2<-median(supmix2$Distance)#
+ave_dis3<-median(supmix3$Distance)#
+ave_dis4<-median(supmix4$Distance)#
+ave_distance<-rbind(ave_dis1,ave_dis2,ave_dis3,ave_dis4)#
+#
+## CHANGE THE POPULATION!!! to plot the proportion of assignment change as distance increases (supmix1[,4...8)]), Casia=8,N_levant=7,S_desert=6,S_levant=5,N_meso=4#
+#
+pdf("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Plot/Ancestry_vs_distance/S_levant_ave_wRange.pdf",width=7,height=5)#
+#
+boxplot(supmix1[,5],xlim=c(0,(max(ave_distance)+50)),ylim=c(0,1),at=c(ave_dis1),boxwex = 150,col="blue", main= "Southern Levant wild ancestry", ylab="Proportion Ancestry",xlab="Great circle distance (Km)")#
+boxplot(supmix2[,5],add=T,at=ave_dis2,boxwex=150,col="red")#
+boxplot(supmix3[,5],add=T,at=ave_dis3,boxwex=150,col="green")#
+#
+axis(1, labels =T)#
+#legend("topright",col=c("green","blue","red","cyan"),fill=c("Green","Blue","Red","Cyan"),legend=c("Coastal Mediterranean","Mediterranean","Asia","East Africa"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#legend("topright",col=c("blue","green","red"),fill=c("blue","green","Red"),legend=c("Central European","Coastal Mediterranean","Asia"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#
+dev.off()
+rm(list=ls())#
+#call the population assignement according to Structure k=4.#
+####CHANGE POPULATION#
+prop_latlong<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_levant.txt",header=T)#
+#
+assi<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/For_STRUCTURE/Structure_w_out_learning_samples_landraces/land_assignment_k4_iSelect6135.txt",header=T)#
+#
+# Select samples names for each population#
+#
+pop1<-subset(assi,assi$Populations == "1")#
+pop2<-subset(assi,assi$Populations == "2")#
+pop3<-subset(assi,assi$Populations == "3")#
+pop4<-subset(assi,assi$Populations == "4")#
+# Get only individuals growing in the native range of wild barley#
+prop_latlong <-subset(prop_latlong, prop_latlong$LATITUDE_original >= 29.72 & prop_latlong$LATITUDE_original <=46.77 & prop_latlong$LONGITUDE_original >=20.9 & prop_latlong $LONGITUDE_original <=73.66)#
+#
+# Separate resutls from supportMix for each population#
+#
+prop_latlong[(prop_latlong[,1] %in% pop1$Samples),]->supmix1#
+prop_latlong[(prop_latlong[,1] %in% pop2$Samples),]->supmix2#
+prop_latlong[(prop_latlong[,1] %in% pop3$Samples),]->supmix3#
+prop_latlong[(prop_latlong[,1] %in% pop4$Samples),]->supmix4#
+#
+head(prop_latlong)#
+##PLOT just the summary of the proportion ancestry distribution from each wild population#
+ave_dis1<-median(supmix1$Distance)#
+ave_dis2<-median(supmix2$Distance)#
+ave_dis3<-median(supmix3$Distance)#
+ave_dis4<-median(supmix4$Distance)#
+ave_distance<-rbind(ave_dis1,ave_dis2,ave_dis3,ave_dis4)
+pdf("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Plot/Ancestry_vs_distance/N_levant_ave_wRange.pdf",width=7,height=5)#
+#
+boxplot(supmix1[,7],xlim=c(0,(max(ave_distance)+50)),ylim=c(0,0.5),at=c(ave_dis1),boxwex = 150,col="blue", main= "Northern Levant wild ancestry", ylab="Proportion Ancestry",xlab="Great circle distance (Km)")#
+boxplot(supmix2[,7],add=T,at=ave_dis2,boxwex=150,col="red")#
+boxplot(supmix3[,7],add=T,at=ave_dis3,boxwex=150,col="green")#
+#
+axis(1, labels =T)
+legend("topright",col=c("blue","green","red"),fill=c("blue","green","Red"),legend=c("Central European","Coastal Mediterranean","Asia"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#
+dev.off()
+cor(prop_latlong$Distance,prop_latlong[,7])
+rm(list=ls())#
+#
+c_asia<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_C_Asia.txt",header=T,row.names=1)#
+#
+n_levant<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_levant.txt",header=T,row.names=1)#
+#
+n_mesopotamia<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_mesopotamia.txt",header=T,row.names=1)#
+#
+s_desert<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_S_desert.txt",header=T,row.names=1)#
+#
+s_levant<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_S_levant.txt",header=T,row.names=1)
+#Make supplemental table 5. Proportions of ancestry and great circle distance from the closest wild population#
+rm(list=ls())#
+#
+c_asia<-read.table("~/Documents/Anita/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_C_Asia.txt",header=T,row.names=1)#
+#
+n_levant<-read.table("~/Documents/Anita/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_levant.txt",header=T,row.names=1)#
+#
+n_mesopotamia<-read.table("~/Documents/Anita/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_mesopotamia.txt",header=T,row.names=1)#
+#
+s_desert<-read.table("~/Documents/Anita/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_S_desert.txt",header=T,row.names=1)#
+#
+s_levant<-read.table("~/Documents/Anita/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_S_levant.txt",header=T,row.names=1)#
+#
+head(c_asia)#
+#Grab the ancestry and distance from each population. eg. if Asia, grab Central_Asia and Distance columns from the input file c_asia#
+#
+Proportions_dis<-cbind(as.data.frame(n_levant[,8]),as.data.frame(n_levant[,6]),as.data.frame(n_mesopotamia[,3]),as.data.frame(s_desert[,5]),as.data.frame(s_levant[,4]),as.data.frame(c_asia[,7]),as.data.frame(n_levant[,9]),as.data.frame(n_mesopotamia[,9]),as.data.frame(s_desert[,9]),as.data.frame(s_levant[,9]),as.data.frame(c_asia[,9]))#
+#
+row.names(Proportions_dis)<-row.names(c_asia)#
+colnames(Proportions_dis)<-c("Unassigned","Northern Levant","Northern Mesopotamia","Syrian Desert","Southern Levant","Central Asia","Northern Levant","Northern Mesopotamia","Syrian Desert","Southern Levant","Central Asia")#
+head(Proportions_dis)#
+#
+#Round to two decimals#
+#
+Proportions_round<-round(Proportions_dis,digits=2)#
+head(Proportions_round)#
+#
+#Separate by landrace populations#
+str<-read.table("~/Documents/Anita/THESIS/Data/For_STRUCTURE/Structure_land_iSelect/land_assignment_k4_iSelect6135.txt",header=T)#
+head(str)#
+#
+land1<-subset(str,str$Populations ==1)#
+land2<-subset(str,str$Populations ==2)#
+land3<-subset(str,str$Populations ==3)#
+land4<-subset(str,str$Populations ==4)#
+#
+Prop_land1<-Proportions_round[(row.names(Proportions_round) %in% land1$Samples),]#
+Prop_land2<-Proportions_round[(row.names(Proportions_round) %in% land2$Samples),]#
+Prop_land3<-Proportions_round[(row.names(Proportions_round) %in% land3$Samples),]#
+Prop_land4<-Proportions_round[(row.names(Proportions_round) %in% land4$Samples),]#
+#
+EMPTY_ROW<-as.data.frame(t(rep("",(dim(Proportions_round)[2]))))#
+colnames(EMPTY_ROW)<-c("Unassigned","Northern Levant","Northern Mesopotamia","Syrian Desert","Southern Levant","Central Asia","Northern Levant","Northern Mesopotamia","Syrian Desert","Southern Levant","Central Asia")#
+Ind_prop_distance<-rbind(as.data.frame(Prop_land1),as.data.frame(EMPTY_ROW),as.data.frame(Prop_land2),as.data.frame(EMPTY_ROW),as.data.frame(Prop_land3),as.data.frame(EMPTY_ROW),as.data.frame(Prop_land4))
+rm(list=ls())#
+#
+c_asia<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_C_Asia.txt",header=T,row.names=1)#
+#
+n_levant<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_levant.txt",header=T,row.names=1)#
+#
+n_mesopotamia<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_mesopotamia.txt",header=T,row.names=1)#
+#
+s_desert<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_S_desert.txt",header=T,row.names=1)#
+#
+s_levant<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_S_levant.txt",header=T,row.names=1)#
+#
+dim(c_asia)#
+#Grab the ancestry and distance from each population. eg. if Asia, grab Central_Asia and Distance columns from the input file c_asia#
+#
+Proportions_dis<-cbind(as.data.frame(n_levant[,6]),as.data.frame(n_mesopotamia[,3]),as.data.frame(s_desert[,5]),as.data.frame(s_levant[,4]),as.data.frame(c_asia[,7]),as.data.frame(n_levant[,8]),as.data.frame(n_mesopotamia[,8]),as.data.frame(s_desert[,8]),as.data.frame(s_levant[,8]),as.data.frame(c_asia[,8]))#
+#
+row.names(Proportions_dis)<-row.names(c_asia)#
+colnames(Proportions_dis)<-c("Northern Levant","Northern Mesopotamia","Syrian Desert","Southern Levant","Central Asia","Northern Levant","Northern Mesopotamia","Syrian Desert","Southern Levant","Central Asia")#
+head(Proportions_dis)#
+#
+#Round to two decimals#
+#
+Proportions_round<-round(Proportions_dis,digits=2)#
+head(Proportions_round)#
+#
+#Separate by landrace populations#
+str<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/For_STRUCTURE/Structure_land_iSelect/land_assignment_k4_iSelect6135.txt",header=T)#
+head(str)#
+#
+land1<-subset(str,str$Populations ==1)#
+land2<-subset(str,str$Populations ==2)#
+land3<-subset(str,str$Populations ==3)#
+land4<-subset(str,str$Populations ==4)
+Pop1<-Prop_land1[,1:5]#
+Pop2<-Prop_land2[,1:5]#
+Pop3<-Prop_land3[,1:5]#
+Pop4<-Prop_land4[,1:5]
+Prop_land1<-Proportions_round[(row.names(Proportions_round) %in% land1$Samples),]#
+Prop_land2<-Proportions_round[(row.names(Proportions_round) %in% land2$Samples),]#
+Prop_land3<-Proportions_round[(row.names(Proportions_round) %in% land3$Samples),]#
+Prop_land4<-Proportions_round[(row.names(Proportions_round) %in% land4$Samples),]
+Pop1<-Prop_land1[,1:5]#
+Pop2<-Prop_land2[,1:5]#
+Pop3<-Prop_land3[,1:5]#
+Pop4<-Prop_land4[,1:5]
+Pop4
+HEAD()
+head(Pop4)
+boxplot(Pop1[,1],Pop2[,1],Pop3[,1],Pop4[,1],Pop1[,2],Pop2[,2],Pop3[,2],Pop4[,2],Pop1[,3],Pop2[,3],Pop3[,3],Pop4[,3],Pop1[,4],Pop2[,4],Pop3[,4],Pop4[,4],Pop1[,5],Pop2[,5],Pop3[,5],Pop4[,5],col=c("blue","Red","Green","Cyan","blue","Red","Green","Cyan","blue","Red","Green","Cyan","blue","Red","Green","Cyan","blue","Red","Green","Cyan"))
+Pop1_new<-cbind(rep("Pop1",(dim(Pop1)[1])),Pop1)#
+colnames(Pop1_new)<-c("Population","Northern Levant", "Northern Mesopotamia", "Syrian Desert", "Southern Levant","Central Asia")#
+#
+Pop2_new<-cbind(rep("Pop2",(dim(Pop2)[1])),Pop2)#
+colnames(Pop2_new)<-c("Population", "Northern Levant", "Northern Mesopotamia", "Syrian Desert", "Southern Levant","Central Asia")#
+#
+Pop3_new<-cbind(rep("Pop3",(dim(Pop3)[1])),Pop3)#
+colnames(Pop3_new)<-c("Population", "Northern Levant", "Northern Mesopotamia", "Syrian Desert", "Southern Levant","Central Asia")#
+Pop4_new<-cbind(rep("Pop4",(dim(Pop4)[1])),Pop4)#
+colnames(Pop4_new)<-c("Population", "Northern Levant", "Northern Mesopotamia", "Syrian Desert", "Southern Levant","Central Asia")#
+DATA_pops<-rbind(Pop1_new, Pop2_new, Pop3_new, Pop4_new)#
+head(DATA_pops)
+require(reshape2)
+DATA_transformed<-melt(DATA_pops, id.var= "Population")
+library(ggplot2)
+bp<-ggplot(data=DATA_transformed, aes(x=variable, y =value, fill= Population)) + geom_boxplot()#
+#
+bp+ scale_fill_manual(name= "Landrace Populations", values=c("blue","red","green","cyan"), labels=c("Central European","Asia","Coastal Mediterranean","East Africa")) + labs(x="Wild populations",y="Proportion Ancestry")
+pdf("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Plot/Distribution_proportions_ancestry.pdf",width=11 , height=5)#
+bp<-ggplot(data=DATA_transformed, aes(x=variable, y =value, fill= Population)) + geom_boxplot()#
+#
+bp+ scale_fill_manual(name= "Landrace Populations", values=c("blue","red","green","cyan"), labels=c("Central European","Asia","Coastal Mediterranean","East Africa")) + labs(x="Wild populations",y="Proportion Ancestry")#
+dev.off()
+rm(list=ls())#
+#call the population assignement according to Structure k=4.#
+####CHANGE POPULATION#
+prop_latlong<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_levant.txt",header=T)#
+#
+assi<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/For_STRUCTURE/Structure_w_out_learning_samples_landraces/land_assignment_k4_iSelect6135.txt",header=T)#
+#
+# Select samples names for each population#
+#
+pop1<-subset(assi,assi$Populations == "1")#
+pop2<-subset(assi,assi$Populations == "2")#
+pop3<-subset(assi,assi$Populations == "3")#
+pop4<-subset(assi,assi$Populations == "4")#
+# Get only individuals growing in the native range of wild barley#
+prop_latlong <-subset(prop_latlong, prop_latlong$LATITUDE_original >= 29.72 & prop_latlong$LATITUDE_original <=46.77 & prop_latlong$LONGITUDE_original >=20.9 & prop_latlong $LONGITUDE_original <=73.66)#
+#
+# Separate resutls from supportMix for each population#
+#
+prop_latlong[(prop_latlong[,1] %in% pop1$Samples),]->supmix1#
+prop_latlong[(prop_latlong[,1] %in% pop2$Samples),]->supmix2#
+prop_latlong[(prop_latlong[,1] %in% pop3$Samples),]->supmix3#
+prop_latlong[(prop_latlong[,1] %in% pop4$Samples),]->supmix4#
+#
+head(prop_latlong)#
+##PLOT just the summary of the proportion ancestry distribution from each wild population#
+ave_dis1<-median(supmix1$Distance)#
+ave_dis2<-median(supmix2$Distance)#
+ave_dis3<-median(supmix3$Distance)#
+ave_dis4<-median(supmix4$Distance)#
+ave_distance<-rbind(ave_dis1,ave_dis2,ave_dis3,ave_dis4)
+boxplot(supmix1[,7],xlim=c(0,(max(ave_distance)+50)),ylim=c(0,0.5),at=c(ave_dis1),boxwex = 150,col="blue", main= "Northern Levant wild ancestry", ylab="Proportion Ancestry",xlab="Great circle distance (Km)")#
+boxplot(supmix2[,7],add=T,at=ave_dis2,boxwex=150,col="red")#
+boxplot(supmix3[,7],add=T,at=ave_dis3,boxwex=150,col="green")#
+#
+axis(1, labels =T)
+pdf("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Plot/Ancestry_vs_distance/N_levant_ave_wRange.pdf",width=7,height=5)#
+#
+boxplot(supmix1[,7],xlim=c(0,(max(ave_distance)+50)),ylim=c(0,0.5),at=c(ave_dis1),boxwex = 150,col="blue", main= "Northern Levant wild ancestry", ylab="Proportion Ancestry",xlab="Great circle distance (Km)")#
+boxplot(supmix2[,7],add=T,at=ave_dis2,boxwex=150,col="red")#
+boxplot(supmix3[,7],add=T,at=ave_dis3,boxwex=150,col="green")#
+#
+axis(1, labels =T)
+legend("topright",col=c("blue","green","red"),fill=c("blue","green","Red"),legend=c("Central European","Coastal Mediterranean","Asia"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))
+dev.off()
+cor(prop_latlong$Distance,prop_latlong[,7])
+rm(list=ls())#
+#call the population assignement according to Structure k=4.#
+####CHANGE POPULATION#
+prop_latlong<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Ancestry_vs_distance/From_N_mesopotamia.txt",header=T)#
+#
+assi<-read.table("~/Dropbox/ANITA_301213/THESIS/Data/For_STRUCTURE/Structure_w_out_learning_samples_landraces/land_assignment_k4_iSelect6135.txt",header=T)#
+#
+# Select samples names for each population#
+#
+pop1<-subset(assi,assi$Populations == "1")#
+pop2<-subset(assi,assi$Populations == "2")#
+pop3<-subset(assi,assi$Populations == "3")#
+pop4<-subset(assi,assi$Populations == "4")#
+# Get only individuals growing in the native range of wild barley#
+prop_latlong <-subset(prop_latlong, prop_latlong$LATITUDE_original >= 29.72 & prop_latlong$LATITUDE_original <=46.77 & prop_latlong$LONGITUDE_original >=20.9 & prop_latlong $LONGITUDE_original <=73.66)#
+#
+# Separate resutls from supportMix for each population#
+#
+prop_latlong[(prop_latlong[,1] %in% pop1$Samples),]->supmix1#
+prop_latlong[(prop_latlong[,1] %in% pop2$Samples),]->supmix2#
+prop_latlong[(prop_latlong[,1] %in% pop3$Samples),]->supmix3#
+prop_latlong[(prop_latlong[,1] %in% pop4$Samples),]->supmix4#
+#
+head(prop_latlong)#
+##PLOT just the summary of the proportion ancestry distribution from each wild population#
+ave_dis1<-median(supmix1$Distance)#
+ave_dis2<-median(supmix2$Distance)#
+ave_dis3<-median(supmix3$Distance)#
+ave_dis4<-median(supmix4$Distance)#
+ave_distance<-rbind(ave_dis1,ave_dis2,ave_dis3,ave_dis4)
+boxplot(supmix1[,4],xlim=c(0,(max(ave_distance)+50)),ylim=c(0,0.5),at=c(ave_dis1),boxwex = 150,col="blue", main= "Northern Mesopotamia wild ancestry", ylab="Proportion Ancestry",xlab="Great circle distance (Km)")#
+boxplot(supmix2[,4],add=T,at=ave_dis2,boxwex=150,col="red")#
+boxplot(supmix3[,4],add=T,at=ave_dis3,boxwex=150,col="green")#
+#
+axis(1, labels =T)#
+#legend("topright",col=c("green","blue","red","cyan"),fill=c("Green","Blue","Red","Cyan"),legend=c("Coastal Mediterranean","Mediterranean","Asia","East Africa"),cex=0.75,
+pdf("~/Dropbox/ANITA_301213/THESIS/Data/for_SupporMix/Supportmix_barley_phased_1896/Analysis/75_windows/Plot/Ancestry_vs_distance/N_mesopotamia_ave_wRange.pdf",width=7,height=5)#
+#
+boxplot(supmix1[,4],xlim=c(0,(max(ave_distance)+50)),ylim=c(0,0.5),at=c(ave_dis1),boxwex = 150,col="blue", main= "Northern Mesopotamia wild ancestry", ylab="Proportion Ancestry",xlab="Great circle distance (Km)")#
+boxplot(supmix2[,4],add=T,at=ave_dis2,boxwex=150,col="red")#
+boxplot(supmix3[,4],add=T,at=ave_dis3,boxwex=150,col="green")#
+#
+axis(1, labels =T)#
+#legend("topright",col=c("green","blue","red","cyan"),fill=c("Green","Blue","Red","Cyan"),legend=c("Coastal Mediterranean","Mediterranean","Asia","East Africa"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#legend("topright",col=c("blue","green","red"),fill=c("blue","green","Red"),legend=c("Central European","Coastal Mediterranean","Asia"),cex=0.75,bg="white",title=expression(bold("Landraces Populations")))#
+#
+dev.off()
+cor(prop_latlong$Distance,prop_latlong[,4])
