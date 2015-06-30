@@ -5,6 +5,8 @@ Article Title: Barley landraces are characterized by geographically heterogeneou
 Journal: Genome Biology
 Authors: Ana M. Poets, Zhou Fang, Michael T. Clegg, and Peter L. Morrell
 
+URL article: http://www.genomebiology.com/
+
 This repository contains the scripts used for data analysis and figures plotting for our paper 
 published in Genome Biology.
 
