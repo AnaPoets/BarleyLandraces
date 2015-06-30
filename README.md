@@ -2,7 +2,7 @@ Datasets and Code
 ==================
 
 Article Title: Barley landraces are characterized by geographically heterogeneous genomic origins  
-Journal: Genome Biology
+Journal: Genome Biology  
 Authors: Ana M. Poets, Zhou Fang, Michael T. Clegg, and Peter L. Morrell
 
 Article URL: http://www.genomebiology.com/
